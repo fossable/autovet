@@ -1,0 +1,13 @@
+[package]
+name = "autovet-api"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+actix-web = {version = "4", features = ["rustls"]}
+env_logger = "0"
+log = { version = "0", default-features = false }
+rustls = "0"
+rustls-pemfile = "0"
+simple-error = "0"
+reqwest = { version = "0", features=["stream"] }

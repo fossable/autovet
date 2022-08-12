@@ -1,0 +1,11 @@
+[profile.release]
+strip = true
+
+[workspace]
+members = [
+    "autovet",
+    "autovet-core",
+    "autovet-api",
+    "autovet-poll",
+    "autovet-worker",
+]

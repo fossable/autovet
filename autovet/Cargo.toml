@@ -1,0 +1,12 @@
+[package]
+name = "autovet"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "3", features = ["derive"] }
+env_logger = "0"
+log = { version = "0", default-features = false }
+serde = { version="1", features = ["derive"] }
+serde_yaml = "0"
+regex = "1"

@@ -1,0 +1,97 @@
+swagger: "2.0"
+info:
+  title: AutoVET API
+  description: RESTful public-facing API.
+  version: 0.0.1
+  termsOfService: ""
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+
+host: "localhost"
+basePath: "/"
+
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+
+paths:
+  /workers:
+    get:
+      summary: Returns a list of active workers.
+      responses:
+        200:
+          description: The worker list
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Worker"
+        default:
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/Error"
+
+  /packages:
+    get:
+      summary: Returns a list of packages.
+      parameters:
+        - name: channel
+          in: url
+          required: false
+        - name: name
+          in: url
+          required: false
+      responses:
+        200:
+          description: The package list
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Package"
+        default:
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/Error"
+
+definitions:
+  Error:
+    type: object
+    properties:
+      fault_message:
+        type: string
+        description: A description of the error condition
+        readOnly: true
+
+  Worker:
+    type: object
+    description: Represents a worker processing a package.
+
+  Package:
+    type: object
+    description: Represents a package.
+    properties:
+      id:
+        description: The package's UUID.
+        type: string
+      name:
+        description: The package's canonical name.
+        type: string
+      version:
+        description: The package's version string.
+        type: string
+      channel:
+        description: The channel containing the package.
+        type: string
+      processed:
+        description: The last time the package was processed.
+        type: string
+      worker:
+        description: The worker that processed the package.
+        type: string
+
+  SastResults:
+
+  DastResults:
