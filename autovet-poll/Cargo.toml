@@ -3,6 +3,8 @@ name = "autovet-poll"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
+reqwest = { version = "0", features=["blocking", "stream", "json"] }
+flate2 = "1"
+tar = "0"
+autovet-core = { path="../autovet-core", version = "0.0.1" }

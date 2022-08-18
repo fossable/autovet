@@ -14,8 +14,8 @@ struct Syscall {
 
 pub fn run(cmd: Commands) -> Result<(), Box<dyn Error>> {
     match cmd {
-        Commands::Test { executable } => {
-            // Try to automatically determine to what package channel the executable belongs
+        Commands::Test { package } => {
+            // Try to automatically determine to what channel the package belongs
             // TODO
 
             // Run the test under strace
@@ -24,7 +24,7 @@ pub fn run(cmd: Commands) -> Result<(), Box<dyn Error>> {
                 .arg("--instruction-pointer")
                 .stdout(Stdio::null())
                 .output()
-                .expect("Failed to run test");
+                .expect("Failed to invoke strace");
 
             let mut syscalls: Vec<Syscall> = Vec::new();
 
@@ -39,8 +39,13 @@ pub fn run(cmd: Commands) -> Result<(), Box<dyn Error>> {
                     let mut arguments: Vec<String> = Vec::new();
 
                     // TODO
+                    syscalls.push(Syscall{
+                        name: name.as_str().to_string(), address: address.as_str().to_string(), arguments
+                    })
                 }
             }
+
+
             Ok(())
         }
         _ => panic!(),

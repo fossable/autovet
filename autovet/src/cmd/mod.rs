@@ -5,12 +5,28 @@ pub mod test;
 #[derive(clap::Subcommand, Debug)]
 pub enum Commands {
     Test {
-        executable: String,
+
+        /// The package to test
+        package: String,
     },
 
-    UploadEnvironment {},
+    SubmitEnvironment {},
 
-    Query {},
+    /// Query the autovet public API
+    Query {
+
+        /// The package channel to query
+        #[clap(long)]
+        channel: Option<String>,
+
+        /// The package to query
+        #[clap(long)]
+        package: Option<String>,
+
+        /// The package version to query
+        #[clap(long)]
+        version: Option<String>,
+    },
 
     /// A pacman wrapper
     #[clap(trailing_var_arg = true)]

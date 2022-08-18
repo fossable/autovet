@@ -1,3 +1,5 @@
+pub mod pacman;
+
 pub struct PackageDeclaration {
     pub channels: Vec<String>,
 }
@@ -29,4 +31,5 @@ pub struct SyscallSelection {
 pub enum PackageChannel {
     Pacman,
     CratesIo,
+    DockerHub,
 }

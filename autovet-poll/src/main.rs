@@ -1,3 +1,5 @@
+pub mod pacman;
+
 fn main() {
-    println!("Hello, world!");
+    crate::pacman::sync();
 }
