@@ -1,5 +1,5 @@
 pub mod pacman;
 
 fn main() {
-    crate::pacman::sync();
+	crate::pacman::sync();
 }
