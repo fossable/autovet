@@ -5,8 +5,8 @@ pub mod test;
 #[derive(clap::Subcommand, Debug)]
 pub enum Commands {
 	Test {
-		/// The package to test
-		package: String,
+		/// The executable path to test
+		executable: String,
 	},
 
 	SubmitEnvironment {},
