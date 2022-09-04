@@ -1,5 +1,6 @@
 use autovet_core::package::Package;
 use flate2::read::GzDecoder;
+use serde_json::json;
 use std::error::Error;
 use std::io::Read;
 use tar::Archive;
@@ -7,7 +8,14 @@ use tar::Archive;
 /// Synchronize package metadata from the pacman database.
 pub fn sync() -> Result<(), Box<dyn Error>> {
 	// List current packages
-	let current_packages: Vec<Package> = Package::list("pacman")?;
+	let current_packages: Vec<Package> = Package::find(json!(
+	{
+		"selector": {
+			"channel": "Pacman"
+		},
+		"fields": ["name", "version", "channel"],
+		"limit": 1000000
+	}))?;
 
 	// Get latest pacman database and find new packages
 	for repo in vec!["core", "community", "extra", "multilib"] {
@@ -21,12 +29,13 @@ pub fn sync() -> Result<(), Box<dyn Error>> {
 			let mut desc = String::new();
 			entry?.read_to_string(&mut desc)?;
 
-			let mut package = Package::from_pacman_desc(desc);
-			if !current_packages
-				.iter()
-				.any(|p| p.name == package.name && p.version == package.version)
-			{
-				package.update()?;
+			if let Ok(mut package) = Package::from_pacman_desc(&desc) {
+				if !current_packages
+					.iter()
+					.any(|p| p.name == package.name && p.version == package.version)
+				{
+					package.update()?;
+				}
 			}
 		}
 	}

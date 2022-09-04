@@ -1,4 +1,3 @@
-
 pub struct PackageDeclaration {
 	pub channels: Vec<String>,
 }
@@ -10,6 +9,7 @@ pub struct DynamicAnalysis {
 }
 
 pub struct StaticAnalysis {
+	pub analyzers: Vec<String>,
 	pub syscalls: Option<SyscallSelection>,
 }
 
