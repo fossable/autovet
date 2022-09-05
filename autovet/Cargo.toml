@@ -13,3 +13,4 @@ regex = "1"
 dialoguer = "0"
 console = "0"
 lazy_static = "1"
+autovet-core = { path="../autovet-core", version = "0.0.1" }

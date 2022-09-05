@@ -8,17 +8,10 @@ use std::io::BufRead;
 use std::io::Cursor;
 use std::process::Command;
 use std::process::Stdio;
+use autovet_core::Syscall;
 
 lazy_static! {
 	static ref STRACE_LINE: Regex = Regex::new(r"\[([0-9a-f]+)\] ([a-z0-9]+)\((.*)\) = ").unwrap();
-}
-
-#[derive(Debug, PartialEq, Eq)]
-struct Syscall {
-	pub name: String,
-	pub address: String,
-	pub arguments: Vec<String>,
-	//pub result: String,
 }
 
 /// Reduce the number of syscalls by eliminating duplicates and wildcarding similar calls.
@@ -91,7 +84,7 @@ fn parse_syscall(line: &str) -> Option<Syscall> {
 
 			return Some(Syscall {
 				name: name.as_str().to_string(),
-				address: address.as_str().to_string(),
+				address: u64::from_str_radix(address.as_str(), 16).unwrap(),
 				arguments,
 			});
 		}
@@ -105,8 +98,8 @@ mod tests {
 	use super::*;
 	#[test]
 	fn test_parse_syscall() {
-		assert_eq!(parse_syscall("[00007fee0bbbbd1b] execve(\"/usr/bin/grep\", [\"grep\"], 0x7ffff9fde4a8 /* 35 vars */) = 0"), Some(Syscall{name: String::from("execve"), address: String::from("00007fee0bbbbd1b"), arguments: vec![String::from("\"/usr/bin/grep\""), String::from("[\"grep\"]"), String::from("0x7ffff9fde4a8 /* 35 vars */")]}));
-		assert_eq!(parse_syscall("[00007f6ceda8951e] newfstatat(3, \"\", {st_mode=S_IFREG|0755, st_size=481072, ...}, AT_EMPTY_PATH) = 0"), Some(Syscall{name: String::from("newfstatat"), address: String::from("00007f6ceda8951e"), arguments: vec![String::from("3"), String::from("\"\""), String::from("{st_mode=S_IFREG|0755, st_size=481072, ...}"), String::from("AT_EMPTY_PATH")]}));
+		assert_eq!(parse_syscall("[00007fee0bbbbd1b] execve(\"/usr/bin/grep\", [\"grep\"], 0x7ffff9fde4a8 /* 35 vars */) = 0"), Some(Syscall{name: String::from("execve"), address: 0x00007fee0bbbbd1bu64, arguments: vec![String::from("\"/usr/bin/grep\""), String::from("[\"grep\"]"), String::from("0x7ffff9fde4a8 /* 35 vars */")]}));
+		assert_eq!(parse_syscall("[00007f6ceda8951e] newfstatat(3, \"\", {st_mode=S_IFREG|0755, st_size=481072, ...}, AT_EMPTY_PATH) = 0"), Some(Syscall{name: String::from("newfstatat"), address: 0x00007f6ceda8951eu64, arguments: vec![String::from("3"), String::from("\"\""), String::from("{st_mode=S_IFREG|0755, st_size=481072, ...}"), String::from("AT_EMPTY_PATH")]}));
 	}
 }
 

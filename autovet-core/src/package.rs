@@ -35,7 +35,7 @@ pub struct Package {
 	pub version: String,
 
 	#[serde(skip_serializing_if = "Option::is_none")]
-	pub filename: Option<String>,
+	pub url: Option<String>,
 
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub description: Option<String>,
@@ -95,7 +95,7 @@ impl Package {
 		for i in 0..lines.len() {
 			match lines[i].trim() {
 				"%NAME%" => package.name = lines[i + 1].trim().to_string(),
-				"%FILENAME%" => package.filename = Some(lines[i + 1].trim().to_string()),
+				"%FILENAME%" => package.url = Some(lines[i + 1].trim().to_string()),// TODO
 				"%VERSION%" => package.version = lines[i + 1].trim().to_string(),
 				"%DESC%" => package.description = Some(lines[i + 1].trim().to_string()),
 				"%CSIZE%" => package.size = Some(lines[i + 1].trim().to_string()),
@@ -241,7 +241,7 @@ mod tests {
 				channel: PackageChannel::Pacman,
 				name: String::from("grep"),
 				version: String::from("3.7-1"),
-				filename: Some(String::from("grep-3.7-1-x86_64.pkg.tar.zst")),
+				url: Some(String::from("grep-3.7-1-x86_64.pkg.tar.zst")),
 				description: Some(String::from("A string search utility")),
 				size: Some(String::from("254020")),
 				md5sum: Some(String::from("df80335ae92442feb3c9bfdb9d91eff6")),

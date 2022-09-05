@@ -11,3 +11,4 @@ autovet-core = { path="../autovet-core", version = "0.0.1" }
 gethostname = "0"
 serde = { version="1", features = ["derive"] }
 serde_json = { version="1" }
+iced-x86 = { version="1.17.0", default-features = false, features=["decoder", "std"] }

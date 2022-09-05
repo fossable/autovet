@@ -4,6 +4,8 @@ use log::info;
 use serde_json::json;
 use std::{error::Error, time::Duration};
 
+pub mod r#static;
+
 fn main() -> Result<(), Box<dyn Error>> {
 	env_logger::init_from_env(env_logger::Env::new());
 
