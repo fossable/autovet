@@ -95,7 +95,7 @@ impl Package {
 		for i in 0..lines.len() {
 			match lines[i].trim() {
 				"%NAME%" => package.name = lines[i + 1].trim().to_string(),
-				"%FILENAME%" => package.url = Some(lines[i + 1].trim().to_string()),// TODO
+				"%FILENAME%" => package.url = Some(lines[i + 1].trim().to_string()), // TODO
 				"%VERSION%" => package.version = lines[i + 1].trim().to_string(),
 				"%DESC%" => package.description = Some(lines[i + 1].trim().to_string()),
 				"%CSIZE%" => package.size = Some(lines[i + 1].trim().to_string()),

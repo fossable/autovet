@@ -1,4 +1,5 @@
 use crate::cmd::Commands;
+use autovet_core::Syscall;
 use console::Style;
 use dialoguer::{theme::ColorfulTheme, Confirm, Input, Select};
 use lazy_static::lazy_static;
@@ -8,7 +9,6 @@ use std::io::BufRead;
 use std::io::Cursor;
 use std::process::Command;
 use std::process::Stdio;
-use autovet_core::Syscall;
 
 lazy_static! {
 	static ref STRACE_LINE: Regex = Regex::new(r"\[([0-9a-f]+)\] ([a-z0-9]+)\((.*)\) = ").unwrap();

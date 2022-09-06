@@ -10,3 +10,4 @@ serde_json = { version="1" }
 simple-error = "0"
 log = { version = "0", default-features = false }
 strum = "0"
+strum_macros = "0"

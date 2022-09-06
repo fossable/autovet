@@ -12,3 +12,6 @@ gethostname = "0"
 serde = { version="1", features = ["derive"] }
 serde_json = { version="1" }
 iced-x86 = { version="1.17.0", default-features = false, features=["decoder", "std"] }
+
+[dev-dependencies]
+iced-x86 = { version="1.17.0", default-features = false, features=["decoder", "std", "encoder", "code_asm"] }
