@@ -6,10 +6,13 @@
 //!   avoid infinite loops.
 //!
 
+use autovet_core::Syscall;
+use autovet_core::SyscallType;
 use iced_x86::{Decoder, DecoderOptions, Instruction, Mnemonic, OpKind, Register};
+use log::trace;
 use std::default::Default;
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct RegisterState {
 	pub rax: u64,
 	pub rbx: u64,
@@ -32,11 +35,12 @@ struct RegisterState {
 
 impl RegisterState {
 	pub fn set(&mut self, register: Register, value: u64) {
+		trace!("Setting {:?} to {}", register, value);
 		match register {
 			Register::RAX | Register::EAX => self.rax = value,
-			Register::RBX | Register::EBX => self.rax = value,
-			Register::RCX | Register::ECX => self.rax = value,
-			Register::RDX | Register::EDX => self.rax = value,
+			Register::RBX | Register::EBX => self.rbx = value,
+			Register::RCX | Register::ECX => self.rcx = value,
+			Register::RDX | Register::EDX => self.rdx = value,
 			_ => todo!(),
 		}
 	}
@@ -57,13 +61,21 @@ impl RegisterState {
 }
 
 pub fn waterfall(code: &Vec<u8>, rip: u64) {
+	// Allocate a boolean for each instruction to track whether it has been visited
 	let mut instructions: Vec<(Instruction, bool)> = Decoder::new(64, code, DecoderOptions::NONE)
 		.iter()
 		.map(|i| (i, false))
 		.collect();
 
 	let mut state = RegisterState::default();
+}
 
+/// Emulate the given instructions with the given register state and collect syscalls encountered.
+fn emulate(
+	state: &mut RegisterState,
+	instructions: &mut Vec<(Instruction, bool)>,
+	syscalls: &mut Vec<Syscall>,
+) {
 	while state.rip < instructions.len() {
 		// If we already visited this instruction, then we should stop to prevent infinite loops
 		if instructions[state.rip].1 {
@@ -80,9 +92,11 @@ pub fn waterfall(code: &Vec<u8>, rip: u64) {
 		match ins.mnemonic() {
 			Mnemonic::Mov => match (ins.op_kind(0), ins.op_kind(1)) {
 				(OpKind::Register, OpKind::Register) => {
-					state.set(ins.op_register(1), state.get(ins.op_register(0)))
+					trace!("[{}] register mov", state.rip);
+					state.set(ins.op_register(1), state.get(ins.op_register(0)));
 				}
 				(OpKind::Immediate64, OpKind::Register) => {
+					trace!("[{}] immediate mov", state.rip);
 					state.set(ins.op_register(1), ins.immediate(0))
 				}
 				_ => todo!(),
@@ -114,20 +128,23 @@ pub fn waterfall(code: &Vec<u8>, rip: u64) {
 			},
 			// Take all jumps regardless of the condition
 			Mnemonic::Jmp | Mnemonic::Je | Mnemonic::Jne | Mnemonic::Jle => {
+				// Duplicate state before the jump
+				let mut tmp_state = state.clone();
 				// TODO set RIP
+				emulate(&mut tmp_state, instructions, syscalls);
 			}
 			Mnemonic::Syscall => {
 				// Determine what syscall this is
-				/*let syscall = match SyscallType::from_repr(state.rax) {
-					SyscallType::Close => Syscall{
-						name: "close",
-						address: instruction.ip(),
-						arguments: vec![state.rdi],
+				syscalls.push(match SyscallType::from_repr(state.rax) {
+					Some(SyscallType::Close) => Syscall {
+						name: String::from("close"),
+						address: ins.ip(),
+						arguments: vec![],
 					},
 					_ => todo!(),
-				};*/
+				});
 			}
-			_ => {}
+			_ => trace!("[{}] unknown instruction", state.rip),
 		}
 	}
 }
@@ -136,26 +153,51 @@ pub fn waterfall(code: &Vec<u8>, rip: u64) {
 mod tests {
 	use super::*;
 	use iced_x86::code_asm::*;
+	use std::error::Error;
 
-	fn run_instructions(a: CodeAssembler, state: &RegisterState) {
-		let mut decoder = Decoder::new(64, a.assemble(0)?, DecoderOptions::NONE);
-		let mut ins = Instruction::default();
+	fn test_emulate(mut a: CodeAssembler, state: &mut RegisterState) -> Vec<Syscall> {
+		let bytes = a.assemble(0).unwrap();
+		let mut instructions: Vec<(Instruction, bool)> =
+			Decoder::new(64, &bytes, DecoderOptions::NONE)
+				.iter()
+				.map(|i| (i, false))
+				.collect();
 
-		while decoder.can_decode() {
-			decoder.decode_out(&mut ins);
-			// TODO
-		}
+		// Ignore syscalls
+		let mut syscalls: Vec<Syscall> = Vec::new();
+
+		super::emulate(state, &mut instructions, &mut syscalls);
+		return syscalls;
 	}
 
 	#[test]
-	fn test_mov() {
+	fn mov() -> Result<(), Box<dyn Error>> {
 		let mut a = CodeAssembler::new(64)?;
 		a.mov(rax, rbx)?;
+		a.mov(rax, 0x100u64)?;
 
 		let mut state = RegisterState::default();
-		state.rax = 1337;
-		state.rbx = 890;
+		state.rax = 0x1337;
+		state.rbx = 0x890;
 
-		assert_eq!(state.rax, state.rbx);
+		test_emulate(a, &mut state);
+
+		assert_eq!(state.rax, 0x100);
+		assert_eq!(state.rbx, 0x1337);
+		Ok(())
+	}
+
+	#[test]
+	fn syscall_close() -> Result<(), Box<dyn Error>> {
+		let mut a = CodeAssembler::new(64)?;
+		a.syscall()?;
+
+		let mut state = RegisterState::default();
+		state.rax = 3;
+
+		let syscalls = test_emulate(a, &mut state);
+
+		assert_eq!("close", syscalls.first().unwrap().name);
+		Ok(())
 	}
 }
