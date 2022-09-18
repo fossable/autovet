@@ -114,6 +114,9 @@ pub fn run(cmd: Commands) -> Result<(), Box<dyn Error>> {
 			// Try to automatically determine to what channel the package belongs
 			// TODO
 
+			// Get static syscalls
+			let static_syscalls = autovet_worker::r#static::x86_64::extract_syscalls(&executable)?;
+
 			loop {
 				let args: String = Input::with_theme(&theme)
 					.with_prompt("Enter program arguments (or CTRL-D to stop)")
